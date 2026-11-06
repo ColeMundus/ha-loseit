@@ -3,6 +3,7 @@
 import json
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -19,6 +20,16 @@ def release_tree(tmp_path):
     manifest.write_text('{"version": "1.2.3"}')
     (tmp_path / "pyproject.toml").write_text('[project]\nversion="1.2.3"\n')
     return tmp_path
+
+
+def test_current_beta_metadata_and_lock_agree():
+    values = metadata(ROOT, "v0.1.0b1")
+    assert values["version"] == "0.1.0b1"
+    assert values["prerelease"] == "true"
+    assert values["filename"] == "loseit-0.1.0b1.zip"
+    lock = tomllib.loads((ROOT / "uv.lock").read_text())
+    project = next(p for p in lock["package"] if p["name"] == "ha-loseit")
+    assert project["version"] == values["version"]
 
 
 def test_release_version_cross_check(release_tree):

@@ -1,9 +1,9 @@
 # Changelog
 
-## Unreleased — experimental preview
+## 0.1.0b1 — public beta
 
-This repository has no stable public release yet. The manifest's `0.1.0` is
-preview metadata, not proof that a matching GitHub release exists.
+First beta preview, not a stable release. HACS custom-repository and manual ZIP
+installation; not included in the default HACS catalog.
 
 ### Added
 

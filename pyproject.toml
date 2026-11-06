@@ -1,6 +1,6 @@
 [project]
 name = "ha-loseit"
-version = "0.1.0"
+version = "0.1.0b1"
 description = "Experimental read-only Lose It! Home Assistant integration"
 requires-python = ">=3.14.2,<3.15"
 dependencies = ["aiohttp==3.14.5"]

@@ -1,11 +1,11 @@
-![Official Lose It! app icon](custom_components/loseit/brand/icon.png)
+<img src="custom_components/loseit/brand/icon.png" alt="Official Lose It! app icon" width="64" height="64">
 
 # Lose It! for Home Assistant
 
-[![CI: workflows](https://img.shields.io/badge/CI-workflows-blue.svg)](https://github.com/ColeMundus/ha-loseit/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Tested HA: 2026.10.0](https://img.shields.io/badge/Tested_HA-2026.10.0-blue.svg)](docs/installation.md)
-[![Status: experimental preview](https://img.shields.io/badge/Status-experimental_preview-orange.svg)](docs/limitations.md)
+[![CI: workflow](docs/badges/ci.svg)](https://github.com/ColeMundus/ha-loseit/actions/workflows/ci.yml)
+[![HA tested: 2026.10.4](docs/badges/compatibility.svg)](docs/installation.md)
+[![License: MIT](docs/badges/license.svg)](LICENSE)
+[![Distribution: HACS custom / beta](docs/badges/distribution.svg)](docs/installation.md#hacs-custom-repository)
 
 Native, **read-only** Lose It! diary sensors for Home Assistant. This is a custom
 integration, not a Supervisor add-on; no extra container is needed.
@@ -22,12 +22,13 @@ goal changes, water, fasting or historical import is included.
 
 ## Install and connect
 
-Requires **Home Assistant Core 2026.10.0+**. This preview is private: you need
-repository access or a maintainer-provided manual installation ZIP. It is not
-available through HACS or approved for its default catalog.
+Requires **Home Assistant Core 2026.10.0+**. This public beta is a HACS custom
+repository, not in the default catalog.
 
-1. Copy `custom_components/loseit/` into your HA configuration's
-   `custom_components/` directory, or extract the manual ZIP into the configuration directory.
+1. In **HACS → ⋮ → Custom repositories**, add
+   `https://github.com/ColeMundus/ha-loseit` as **Integration**, then download Lose It!.
+   Select `v0.1.0b1` using the [beta installation steps](docs/installation.md#hacs-custom-repository).
+   Or extract the release's manual ZIP into your HA configuration directory.
 2. Restart HA → **Settings → Devices & services → Add integration → Lose It!**.
 3. In your signed-in Lose It! desktop browser, open **Developer tools → Network**,
    refresh, select a website request, then **Headers → Request Headers → Cookie →

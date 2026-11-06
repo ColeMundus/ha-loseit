@@ -21,8 +21,8 @@ uv run --locked python scripts/package.py --check
 git diff --check
 ```
 
-Cloning requires access while private. Python/HA harness versions are pinned in
-`pyproject.toml` and `uv.lock`; resolve Python, HA and aiohttp compatibility together.
+Python/HA harness versions are pinned in `pyproject.toml` and `uv.lock`;
+resolve Python, HA and aiohttp compatibility together.
 See [releasing](docs/releasing.md) for artifact and publication commands.
 
 ## Compatibility and tests
