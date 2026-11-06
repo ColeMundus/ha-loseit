@@ -1,0 +1,134 @@
+name: Validate
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+  schedule:
+    - cron: '23 7 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+defaults:
+  run:
+    shell: bash
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: "0.12.19"
+          python-version: "3.14.7"
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run --locked ruff check .
+      - run: uv run --locked ruff format --check .
+  types:
+    name: Types
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: "0.12.19"
+          python-version: "3.14.7"
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run --locked mypy custom_components/loseit
+  tests:
+    name: Tests and coverage (90% minimum)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: "0.12.19"
+          python-version: "3.14.7"
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Offline tests with branch coverage
+        run: |
+          mkdir -p artifacts
+          uv run --locked pytest --junitxml=artifacts/junit.xml \
+            --cov=custom_components/loseit --cov-branch \
+            --cov-report=term-missing --cov-report=xml:artifacts/coverage.xml \
+            --cov-report=json:artifacts/coverage.json | tee artifacts/coverage.txt
+      - name: Coverage summary
+        if: always()
+        run: |
+          if test -f artifacts/coverage.txt; then
+            printf '### Offline tests and branch coverage (minimum 90%%)\n```text\n' >> "$GITHUB_STEP_SUMMARY"
+            python -c 'import os,pathlib; p=pathlib.Path("artifacts/coverage.txt"); open(os.environ["GITHUB_STEP_SUMMARY"], "a").write(p.read_text())'
+            printf '\n```\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: loseit-coverage
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: "0.12.19"
+          python-version: "3.14.7"
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run --locked pytest tests/test_packaging.py tests/test_branding.py tests/test_release_tooling.py tests/test_workflows.py
+      - run: uv run --locked python scripts/package.py --check
+      - run: uv run --locked python scripts/package.py artifacts/loseit-manual-install.zip
+      - run: cd artifacts && sha256sum --check SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: loseit-installation
+          path: |
+            artifacts/loseit-manual-install.zip
+            artifacts/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14
+  hassfest:
+    name: Hassfest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: home-assistant/actions/hassfest@86d4564712fa02543c808e3a693dd04f9d3f8361 # master
+  hacs:
+    name: HACS (public only; local brands required)
+    # HACS requires a public repository. A skip is NOT HACS acceptance.
+    # The 22.5.0 wrapper uses ghcr.io/hacs/action:main (mutable, not version 22.5.0).
+    # Inspected image revision 0704ffc6 supports integration/brand/icon.png.
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: hacs/action@d556e736723344f83838d08488c983a15381059a # 22.5.0
+        with:
+          category: integration

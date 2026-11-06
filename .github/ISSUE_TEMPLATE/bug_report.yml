@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a reproducible problem without sharing personal data.
+title: "[Bug]: "
+labels: [needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not upload cookies, raw responses, HARs, backups, account identifiers or health values.
+        For a security problem, use SECURITY.md instead of this form.
+  - type: input
+    id: version
+    attributes:
+      label: Integration version or commit
+    validations:
+      required: true
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant Core version
+    validations:
+      required: true
+  - type: dropdown
+    id: installation
+    attributes:
+      label: Installation method
+      options:
+        - Manual installation
+        - HACS custom repository
+        - Development environment
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Use invented examples; do not include account or health data.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized error message (optional)
+      description: Review before posting. Never paste full debug logs or raw provider payloads.
+      render: text
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials, account identifiers and personal health data.
+          required: true

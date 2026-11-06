@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest an improvement to the read-only integration.
+title: "[Feature]: "
+labels: [needs-triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What user problem would this solve?
+      description: Describe the workflow without personal account or health details.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior and alternatives
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Public documentation or API evidence (optional)
+      description: Link public sources, not authenticated payloads or private data.

@@ -1,0 +1,127 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish existing checked-out tag (configure release environment reviewers first)'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+defaults:
+  run:
+    shell: bash
+jobs:
+  validate:
+    name: Release validation
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+  prepare:
+    name: Build release assets (no publishing)
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      tag: ${{ steps.metadata.outputs.tag }}
+      prerelease: ${{ steps.metadata.outputs.prerelease }}
+      filename: ${{ steps.metadata.outputs.filename }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@94527f2e458b27549849d47d273a16bec83a01e9 # v7
+        with:
+          version: "0.12.19"
+          python-version: "3.14.7"
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Require an existing tag checked out exactly at the workflow commit
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          test "$REF_TYPE" = tag
+          test "$(git rev-list -n 1 "refs/tags/$TAG")" = "$(git rev-parse HEAD)"
+      - name: Cross-check tag, manifest and project version
+        id: metadata
+        env:
+          TAG: ${{ github.ref_name }}
+        run: uv run --locked python scripts/release_metadata.py "$TAG" --github-output "$GITHUB_OUTPUT"
+      - name: Build and verify installation ZIP and checksum
+        env:
+          FILENAME: ${{ steps.metadata.outputs.filename }}
+        run: |
+          uv run --locked python scripts/package.py "artifacts/$FILENAME"
+          cd artifacts && sha256sum --check SHA256SUMS
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: loseit-release-assets
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
+  publish:
+    name: Publish approved release
+    needs: prepare
+    # Tags only build. Publication requires manual dispatch on that existing tag.
+    if: github.event_name == 'workflow_dispatch' && inputs.publish == true
+    environment: release
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: loseit-release-assets
+          path: artifacts
+      - name: Generate categorized notes and publish without creating a tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+          FILENAME: ${{ needs.prepare.outputs.filename }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          cd artifacts && sha256sum --check SHA256SUMS && cd ..
+          gh api --method POST "repos/$GH_REPO/releases/generate-notes" \
+            -f tag_name="$TAG" -f configuration_file_path=scripts/release-notes.yml \
+            --jq .body > release-notes.md
+          flags=(--latest=false)
+          if test "$PRERELEASE" = true; then flags+=(--prerelease); fi
+          python scripts/verify_release_tag.py
+          gh release create "$TAG" "artifacts/$FILENAME" artifacts/SHA256SUMS \
+            --verify-tag --title "$TAG" --notes-file release-notes.md "${flags[@]}"
+      - name: Verify exact published target and assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          PRERELEASE: ${{ needs.prepare.outputs.prerelease }}
+          FILENAME: ${{ needs.prepare.outputs.filename }}
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          python scripts/verify_release_tag.py
+          gh release view "$TAG" --json tagName,isDraft,isPrerelease,assets > published.json
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          release = json.loads(Path("published.json").read_text())
+          assert release["tagName"] == os.environ["TAG"]
+          assert release["isDraft"] is False
+          assert release["isPrerelease"] == (os.environ["PRERELEASE"] == "true")
+          assert {asset["name"] for asset in release["assets"]} == {os.environ["FILENAME"], "SHA256SUMS"}
+          PY
+          mkdir downloaded
+          gh release download "$TAG" --dir downloaded
+          cd downloaded && sha256sum --check SHA256SUMS
+          cmp "$FILENAME" "../artifacts/$FILENAME"

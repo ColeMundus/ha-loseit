@@ -1,0 +1,85 @@
+{
+  "title": "Lose It!",
+  "config": {
+    "step": {
+      "session": {
+        "title": "Website session cookies",
+        "description": "1. Open [Lose It!]({website_url}) in your signed-in browser, then Developer tools \u2192 Network and select a Lose It! request.\n2. Under Headers \u2192 Request Headers, right-click Cookie \u2192 Copy value. See the [cookie guide]({guide_url}).\n3. Paste below, check your fallback timezone, and submit.\n\nKeep this session private. Paste a one-line Cookie value (optional Cookie: prefix); legacy JSON cookie objects also work. Expired sessions need manual replacement from the same account.",
+        "data": {
+          "session_cookies": "Website session",
+          "timezone": "Fallback timezone (IANA, e.g. America/Chicago)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "The website session cookies are invalid or expired. Copy your current session cookies using the guide and try again.",
+      "invalid_input": "Paste a one-line Cookie value with liauth or fn_auth, or a legacy JSON cookie object, and enter a valid IANA timezone. Do not paste a full header block or cURL command.",
+      "rate_limited": "The service has rate limited requests. Wait before retrying.",
+      "cannot_connect": "Cannot retrieve supported account data. Try again later; the experimental website protocol may have changed."
+    },
+    "abort": {
+      "already_configured": "This account is already configured.",
+      "wrong_account": "Use the same account; the existing credentials were not changed.",
+      "reauth_successful": "Session replaced successfully.",
+      "reconfigure_successful": "Connection updated successfully."
+    }
+  },
+  "options": {
+    "error": {
+      "invalid_timezone": "Enter a valid IANA timezone, such as America/Chicago."
+    },
+    "step": {
+      "init": {
+        "title": "Conservative polling policy",
+        "description": "30 minutes is our initial integration policy, not a vendor quota. Choose 30\u20131440 minutes. Manual refresh shares the account cooldown. Individual nutrients can be enabled in the entity registry.",
+        "data": {
+          "poll_minutes": "Polling interval (minutes)",
+          "timezone": "Fallback timezone (IANA)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "budget_kcal": {
+        "name": "Calorie budget"
+      },
+      "food_kcal": {
+        "name": "Food calories"
+      },
+      "exercise_kcal": {
+        "name": "Exercise calories"
+      },
+      "net_kcal": {
+        "name": "Net calories"
+      },
+      "remaining_kcal": {
+        "name": "Remaining calories"
+      },
+      "protein_g": {
+        "name": "Protein"
+      },
+      "carbohydrates_g": {
+        "name": "Carbohydrates"
+      },
+      "fat_g": {
+        "name": "Fat"
+      },
+      "weight_kg": {
+        "name": "Recorded weight for diary day"
+      },
+      "goal_weight_kg": {
+        "name": "Goal weight"
+      },
+      "logged_food_count": {
+        "name": "Logged food count"
+      },
+      "day": {
+        "name": "Source diary date"
+      },
+      "last_success": {
+        "name": "Last successful refresh"
+      }
+    }
+  }
+}

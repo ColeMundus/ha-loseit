@@ -1,0 +1,46 @@
+[project]
+name = "ha-loseit"
+version = "0.1.0"
+description = "Experimental read-only Lose It! Home Assistant integration"
+requires-python = ">=3.14.2,<3.15"
+dependencies = ["aiohttp==3.14.5"]
+
+[dependency-groups]
+dev = [
+  "pytest-homeassistant-custom-component==0.13.375",
+  "ruff==0.14.10",
+  "mypy==1.19.1",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "--disable-socket --allow-unix-socket"
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.14"
+files = ["custom_components/loseit"]
+check_untyped_defs = true
+disallow_untyped_defs = true
+follow_imports = "silent"
+
+[tool.coverage.run]
+branch = true
+# Filesystem scope also measures pure modules loaded under the isolated test package.
+source = ["custom_components/loseit"]
+
+[tool.coverage.report]
+# Measured pre-tooling baseline: 90.8096% combined statement/branch coverage.
+# Preserve the real baseline; 95% remains an improvement target, not a false claim.
+fail_under = 90
+show_missing = true
+precision = 2

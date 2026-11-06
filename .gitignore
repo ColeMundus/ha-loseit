@@ -1,0 +1,22 @@
+# Private account material must never be committed.
+.env
+.env.*
+!.env.example
+private/
+artifacts/
+*.har
+*.eml
+*storage_state*.json
+*cookies*.json
+.venv/
+__pycache__/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+# Local agent context is not part of the distributed project.
+/AGENTS.md
+/.hermes.md
+/CLAUDE.md
