@@ -12,12 +12,12 @@ Run the [contributor checks](../CONTRIBUTING.md#development), then:
 
 ```sh
 uv run --locked python scripts/package.py --check
-uv run --locked python scripts/release_metadata.py v0.1.0b1
-uv run --locked python scripts/package.py artifacts/loseit-0.1.0b1.zip
+uv run --locked python scripts/release_metadata.py v0.1.0
+uv run --locked python scripts/package.py artifacts/loseit-0.1.0.zip
 (cd artifacts && sha256sum --check SHA256SUMS)
 ```
 
-`0.1.0b1` is beta preview metadata, not a claim of publication. The allowlisted
+`0.1.0` is stable release metadata, not a claim of publication. The allowlisted
 ZIP extracts to `custom_components/loseit/` with branding and license notices.
 HACS downloads repository source; do not enable `zip_release` for this nested ZIP
 without separately verifying extraction compatibility.
@@ -49,15 +49,15 @@ Tag pushes validate/build only. With an approved tag at the tested commit:
 
 ```sh
 # Validate/build only:
-gh workflow run release.yml --ref v0.1.0b1 -f publish=false
+gh workflow run release.yml --ref v0.1.0 -f publish=false
 # Publish only after explicit release approval:
-gh workflow run release.yml --ref v0.1.0b1 -f publish=true
+gh workflow run release.yml --ref v0.1.0 -f publish=true
 ```
 
 Only the manual publishing job has write permission. It checks versions and the
 remote tag's resolved commit before/after creation, refuses existing releases and
 verifies downloaded asset bytes/checksums. Prerelease status follows the version;
-releases are not automatically marked latest.
+stable releases are marked latest, while prereleases are explicitly non-latest.
 
 Tag checks and creation are not atomic: immutable tags remain necessary. A
 postpublication mismatch fails without deleting the release. Independently verify

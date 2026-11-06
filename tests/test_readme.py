@@ -1,5 +1,6 @@
 """Keep the compact README's local chip row accessible and truthful."""
 
+import json
 import re
 from pathlib import Path
 from xml.etree import ElementTree
@@ -14,7 +15,7 @@ def test_readme_local_chip_order_accessibility_and_style():
         ("ci", "CI: workflow", "#64748b"),
         ("compatibility", "HA tested: 2026.10.4", "#0369a1"),
         ("license", "License: MIT", "#2563eb"),
-        ("distribution", "Distribution: HACS custom / beta", "#b45309"),
+        ("distribution", "Distribution: HACS custom", "#047857"),
     ]
     assert len(chips) == len(expected)
     for (alt, asset, link), (name, label, color) in zip(chips, expected, strict=True):
@@ -48,7 +49,7 @@ def test_readme_local_chip_order_accessibility_and_style():
     assert "img.shields.io" not in readme
 
 
-def test_readme_compact_official_icon_and_public_beta_installation():
+def test_readme_compact_official_icon_and_stable_installation():
     readme = (ROOT / "README.md").read_text()
     icon = re.search(r'<img src="([^"]+)"[^>]+>', readme)
     assert icon is not None
@@ -56,7 +57,14 @@ def test_readme_compact_official_icon_and_public_beta_installation():
     assert (ROOT / icon.group(1)).is_file()
     assert 'alt="Official Lose It! app icon"' in icon.group()
     assert 'width="64"' in icon.group() and 'height="64"' in icon.group()
-    assert "public beta" in readme
+    assert "**0.1.0**" in readme
+    assert "default stable release" in readme
+    installation = (ROOT / "docs/installation.md").read_text()
+    for text in (readme, installation):
+        assert "beta" not in text.lower()
+        assert "0.1.0b1" not in text
+    assert "default stable release" in installation
+    assert json.loads((ROOT / "hacs.json").read_text())["name"] == "Lose It!"
     assert "Custom repositories" in readme
     assert "not in the default catalog" in readme
     assert "private" not in readme

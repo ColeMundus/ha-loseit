@@ -5,7 +5,7 @@
 [![CI: workflow](docs/badges/ci.svg)](https://github.com/ColeMundus/ha-loseit/actions/workflows/ci.yml)
 [![HA tested: 2026.10.4](docs/badges/compatibility.svg)](docs/installation.md)
 [![License: MIT](docs/badges/license.svg)](LICENSE)
-[![Distribution: HACS custom / beta](docs/badges/distribution.svg)](docs/installation.md#hacs-custom-repository)
+[![Distribution: HACS custom](docs/badges/distribution.svg)](docs/installation.md#hacs-custom-repository)
 
 Native, **read-only** Lose It! diary sensors for Home Assistant. This is a custom
 integration, not a Supervisor add-on; no extra container is needed.
@@ -22,12 +22,12 @@ goal changes, water, fasting or historical import is included.
 
 ## Install and connect
 
-Requires **Home Assistant Core 2026.10.0+**. This public beta is a HACS custom
-repository, not in the default catalog.
+Requires **Home Assistant Core 2026.10.0+**. Version **0.1.0** is a stable release
+for HACS custom-repository installation, not in the default catalog.
 
 1. In **HACS → ⋮ → Custom repositories**, add
    `https://github.com/ColeMundus/ha-loseit` as **Integration**, then download Lose It!.
-   Select `v0.1.0b1` using the [beta installation steps](docs/installation.md#hacs-custom-repository).
+   Use the default stable release.
    Or extract the release's manual ZIP into your HA configuration directory.
 2. Restart HA → **Settings → Devices & services → Add integration → Lose It!**.
 3. In your signed-in Lose It! desktop browser, open **Developer tools → Network**,

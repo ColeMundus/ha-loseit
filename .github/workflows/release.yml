@@ -96,8 +96,8 @@ jobs:
           gh api --method POST "repos/$GH_REPO/releases/generate-notes" \
             -f tag_name="$TAG" -f configuration_file_path=scripts/release-notes.yml \
             --jq .body > release-notes.md
-          flags=(--latest=false)
-          if test "$PRERELEASE" = true; then flags+=(--prerelease); fi
+          flags=(--latest)
+          if test "$PRERELEASE" = true; then flags=(--latest=false --prerelease); fi
           python scripts/verify_release_tag.py
           gh release create "$TAG" "artifacts/$FILENAME" artifacts/SHA256SUMS \
             --verify-tag --title "$TAG" --notes-file release-notes.md "${flags[@]}"

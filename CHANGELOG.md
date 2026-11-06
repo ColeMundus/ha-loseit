@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.1.0 — stable
+
+First stable release, with read-only runtime behavior and manual website-session
+authentication unchanged. Available through HACS custom-repository and manual ZIP
+installation; not included in the default HACS catalog.
+
+### Changed
+
+- Stable installation uses HACS's default release without prerelease selection.
+- HACS display name is now **Lose It!**.
+- Stable releases are marked latest; prereleases remain explicitly non-latest.
+
+The [known limitations](docs/limitations.md), unofficial website protocol and
+manual session renewal still apply.
+
 ## 0.1.0b1 — public beta
 
 First beta preview, not a stable release. HACS custom-repository and manual ZIP

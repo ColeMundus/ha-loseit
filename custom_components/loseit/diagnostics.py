@@ -12,7 +12,7 @@ async def async_get_config_entry_diagnostics(
 ) -> dict[str, Any]:
     coordinator = entry.runtime_data
     return {
-        "integration_version": "0.1.0b1",
+        "integration_version": "0.1.0",
         "experimental_transport": True,
         "read_only": True,
         "poll_minutes": coordinator.update_interval.total_seconds() / 60

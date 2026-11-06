@@ -1,5 +1,6 @@
 """Regression contracts for CI/release trust boundaries and honest check naming."""
 
+import json
 import os
 import re
 import subprocess
@@ -77,6 +78,57 @@ def test_publication_is_manual_opt_in_after_validation_and_build():
     assert "release create" not in str(jobs["prepare"])
     notes = yaml.safe_load((ROOT / "scripts/release-notes.yml").read_text())
     assert notes["changelog"]["categories"][-1]["labels"] == ["*"]
+
+
+@pytest.mark.parametrize("prerelease", [False, True])
+def test_publication_latest_flag_follows_release_channel(tmp_path, prerelease):
+    """Execute the real workflow's flag selection and publication with offline gh."""
+    steps = workflow("release.yml")["jobs"]["publish"]["steps"]
+    publish = next(
+        step["run"] for step in steps if "gh release create" in step.get("run", "")
+    )
+    gh = tmp_path / "gh"
+    gh.write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, pathlib, sys\n"
+        "if sys.argv[1:3] == ['release', 'create']:\n"
+        "    pathlib.Path(os.environ['ARGS']).write_text(json.dumps(sys.argv[1:]))\n"
+        "else:\n"
+        "    obj = {'type': 'commit', 'sha': 'a' * 40}\n"
+        "    print(json.dumps({'ref': 'refs/tags/v1.2.3', 'object': obj}))\n"
+    )
+    gh.chmod(0o755)
+    args_file = tmp_path / "args.json"
+    result = subprocess.run(
+        [
+            "bash",
+            "--noprofile",
+            "--norc",
+            "-eo",
+            "pipefail",
+            "-c",
+            publish[publish.index("flags=(") :],
+        ],
+        cwd=ROOT,
+        env={
+            **os.environ,
+            "PATH": f"{tmp_path}{os.pathsep}{os.environ['PATH']}",
+            "GH_REPO": "example/integration",
+            "TAG": "v1.2.3",
+            "EXPECTED_SHA": "a" * 40,
+            "PRERELEASE": str(prerelease).lower(),
+            "FILENAME": "synthetic.zip",
+            "ARGS": str(args_file),
+        },
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    args = json.loads(args_file.read_text())
+    assert ("--latest" in args) == (not prerelease)
+    assert ("--latest=false" in args) == prerelease
+    assert ("--prerelease" in args) == prerelease
 
 
 def test_remote_tag_checks_bracket_publication():

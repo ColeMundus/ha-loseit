@@ -1,21 +1,18 @@
 # Installation and configuration
 
-Experimental, read-only **custom integration**, not a Supervisor add-on.
+Read-only **custom integration**, not a Supervisor add-on.
 Requires **Home Assistant Core 2026.10.0+**. Cookie setup/options were verified on
 2026.10.0; offline tests target 2026.10.4. Other versions and long-duration session
 behavior remain unverified.
 
 ## HACS custom repository
 
-This public beta is not in HACS's default catalog. With HACS already configured:
+Version **0.1.0** is stable, but not in HACS's default catalog. With HACS already configured:
 
 1. Open **HACS → ⋮ → Custom repositories**. Add
    `https://github.com/ColeMundus/ha-loseit`, select **Integration**, then **Add**.
-2. Open **Lose It!** and choose **Download**. To choose the beta explicitly, expand
-   **Need a different version? → Release**, select **v0.1.0b1** (pre-release),
-   then **Download**. For an installed copy use **⋮ → Redownload** first.
-   Older HACS versions instead have **Show beta versions** in that dialog;
-   enable it before selecting the beta.
+2. Open **Lose It!** and choose **Download** to install the default stable release.
+   For an installed copy use **⋮ → Redownload** first.
 3. Restart HA and follow **Connect** below.
 
 See HACS's [custom repository instructions](https://www.hacs.xyz/docs/faq/custom_repositories/).
@@ -23,8 +20,8 @@ HACS downloads the integration from repository source, not the manual ZIP.
 
 ## Manual installation
 
-Download `loseit-0.1.0b1.zip` and `SHA256SUMS` from the
-[beta release](https://github.com/ColeMundus/ha-loseit/releases/tag/v0.1.0b1).
+Download `loseit-0.1.0.zip` and `SHA256SUMS` from the
+[0.1.0 release](https://github.com/ColeMundus/ha-loseit/releases/tag/v0.1.0).
 Check the ZIP with `sha256sum --check SHA256SUMS` in the download directory.
 
 1. Copy `custom_components/loseit/` into your HA configuration directory's
