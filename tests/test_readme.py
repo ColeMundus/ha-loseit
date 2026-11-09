@@ -57,7 +57,7 @@ def test_readme_compact_official_icon_and_stable_installation():
     assert (ROOT / icon.group(1)).is_file()
     assert 'alt="Official Lose It! app icon"' in icon.group()
     assert 'width="64"' in icon.group() and 'height="64"' in icon.group()
-    assert "**0.1.0**" in readme
+    assert "**0.1.1**" in readme
     assert "default stable release" in readme
     installation = (ROOT / "docs/installation.md").read_text()
     for text in (readme, installation):

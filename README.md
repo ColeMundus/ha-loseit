@@ -22,7 +22,7 @@ goal changes, water, fasting or historical import is included.
 
 ## Install and connect
 
-Requires **Home Assistant Core 2026.10.0+**. Version **0.1.0** is a stable release
+Requires **Home Assistant Core 2026.10.0+**. Version **0.1.1** is a stable release
 for HACS custom-repository installation, not in the default catalog.
 
 1. In **HACS → ⋮ → Custom repositories**, add
