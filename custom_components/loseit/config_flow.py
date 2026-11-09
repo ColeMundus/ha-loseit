@@ -3,7 +3,6 @@
 import json
 import re
 from typing import Any
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import probatio as vol
 from homeassistant import config_entries
@@ -15,6 +14,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+from homeassistant.util import dt as dt_util
 
 from .client import LoseItAuthError, LoseItClient, LoseItError, LoseItRateLimitError
 from .const import (
@@ -29,12 +29,14 @@ from .const import (
 from .request_gate import session_request_gate
 
 
-def valid_timezone(value: str) -> str:
-    """Validate in the handler; arbitrary validators cannot serialize in HA forms."""
+async def async_valid_timezone(value: str) -> str:
+    """Validate off the event loop while keeping the form schema serializable."""
     try:
-        ZoneInfo(value)
-    except (ZoneInfoNotFoundError, ValueError, TypeError) as err:
+        timezone = await dt_util.async_get_time_zone(value)
+    except (ValueError, TypeError) as err:
         raise vol.Invalid("Invalid timezone") from err
+    if timezone is None:
+        raise vol.Invalid("Invalid timezone")
     return value
 
 
@@ -125,7 +127,7 @@ class LoseItConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         existing = self._existing_entry()
         if user_input is not None:
             try:
-                timezone = valid_timezone(user_input[CONF_TIMEZONE])
+                timezone = await async_valid_timezone(user_input[CONF_TIMEZONE])
                 cookies = parse_cookies(user_input[CONF_SESSION])
             except (KeyError, ValueError, TypeError, RecursionError, vol.Invalid):
                 errors["base"] = "invalid_input"
@@ -199,7 +201,7 @@ class LoseItOptionsFlow(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                valid_timezone(user_input[CONF_TIMEZONE])
+                await async_valid_timezone(user_input[CONF_TIMEZONE])
             except vol.Invalid:
                 errors[CONF_TIMEZONE] = "invalid_timezone"
             else:

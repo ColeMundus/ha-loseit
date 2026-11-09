@@ -4,7 +4,7 @@ import logging
 import math
 from collections.abc import Callable
 from datetime import date, datetime, time, timedelta
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+from zoneinfo import ZoneInfo
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
@@ -22,8 +22,6 @@ from .client import (
 )
 from .const import (
     CONF_POLL_MINUTES,
-    CONF_SOURCE_TIMEZONE,
-    CONF_TIMEZONE,
     DEFAULT_POLL_MINUTES,
 )
 from .request_gate import session_request_gate
@@ -35,7 +33,11 @@ class LoseItCoordinator(DataUpdateCoordinator[DailySnapshot]):
     """Fetch current source day; never relabel an old snapshot as today."""
 
     def __init__(
-        self, hass: HomeAssistant, entry: ConfigEntry, client: LoseItClient
+        self,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        client: LoseItClient,
+        timezone: ZoneInfo,
     ) -> None:
         super().__init__(
             hass,
@@ -49,15 +51,7 @@ class LoseItCoordinator(DataUpdateCoordinator[DailySnapshot]):
         self.client = client
         self.entry = entry
         self.options = dict(entry.options)
-        timezone = entry.data.get(CONF_SOURCE_TIMEZONE) or entry.options.get(
-            CONF_TIMEZONE, entry.data[CONF_TIMEZONE]
-        )
-        try:
-            self.timezone = ZoneInfo(timezone)
-        except (ZoneInfoNotFoundError, ValueError, TypeError):
-            self.timezone = ZoneInfo(
-                entry.options.get(CONF_TIMEZONE, entry.data[CONF_TIMEZONE])
-            )
+        self.timezone = timezone
         self.last_success: datetime | None = None
         self.outcome = "not_updated"
         self._cancel_rollover: Callable[[], None] | None = None

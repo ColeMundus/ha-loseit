@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.1.1
+
+### Fixed
+
+- Resolve timezones with Home Assistant's async loader during setup,
+  reauthentication, reconfiguration and options validation, avoiding blocking
+  timezone-file reads on the event loop.
+- Resolve the source timezone and configured fallback before creating the
+  coordinator; reject invalid stored zones cleanly before fetching provider data.
+
 ## 0.1.0 — stable
 
 First stable release, with read-only runtime behavior and manual website-session
