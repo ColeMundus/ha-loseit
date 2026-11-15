@@ -129,7 +129,7 @@ class LoseItConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 timezone = await async_valid_timezone(user_input[CONF_TIMEZONE])
                 cookies = parse_cookies(user_input[CONF_SESSION])
-            except (KeyError, ValueError, TypeError, RecursionError, vol.Invalid):
+            except KeyError, ValueError, TypeError, RecursionError, vol.Invalid:
                 errors["base"] = "invalid_input"
             else:
                 try:
@@ -145,7 +145,7 @@ class LoseItConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     errors["base"] = "invalid_auth"
                 except LoseItRateLimitError:
                     errors["base"] = "rate_limited"
-                except (LoseItError, TimeoutError):
+                except LoseItError, TimeoutError:
                     errors["base"] = "cannot_connect"
                 else:
                     if (

@@ -36,7 +36,7 @@ def parse_identity(html: str) -> tuple[int, str, int]:
             raise ValueError
         if type(offset) is not int or not -12 <= offset <= 14:
             raise ValueError
-    except (ValueError, TypeError, IndexError, AttributeError):
+    except ValueError, TypeError, IndexError, AttributeError:
         raise LoseItProtocolError(
             "Unsupported Lose It embedded account schema"
         ) from None

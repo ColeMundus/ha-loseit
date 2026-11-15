@@ -89,7 +89,7 @@ class LoseItCoordinator(DataUpdateCoordinator[DailySnapshot]):
                 },
             )
             raise UpdateFailed("Account rate limited", retry_after=delay) from None
-        except (LoseItError, TimeoutError):
+        except LoseItError, TimeoutError:
             self.outcome = "error"
             raise UpdateFailed("Cannot retrieve account data") from None
         self._rate_failures = 0

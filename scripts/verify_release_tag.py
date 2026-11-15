@@ -32,7 +32,7 @@ def lookup(endpoint: str) -> dict[str, object]:
             timeout=30,
         )
         value = json.loads(result.stdout)
-    except (OSError, subprocess.SubprocessError, ValueError):
+    except OSError, subprocess.SubprocessError, ValueError:
         raise ValueError("Remote tag lookup failed") from None
     if not isinstance(value, dict):
         raise ValueError("Malformed remote tag response")
