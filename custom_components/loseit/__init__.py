@@ -21,7 +21,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: LoseItConfigEntry) -> bo
     for name in (entry.data.get(CONF_SOURCE_TIMEZONE) or fallback, fallback):
         try:
             timezone = await dt_util.async_get_time_zone(name)
-        except (ValueError, TypeError):
+        except ValueError, TypeError:
             continue
         if timezone is not None:
             break

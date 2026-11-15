@@ -38,7 +38,7 @@ def _retry_after(value: str | None) -> float | None:
     except ValueError:
         try:
             seconds = (parsedate_to_datetime(value) - datetime.now(UTC)).total_seconds()
-        except (ValueError, TypeError, OverflowError):
+        except ValueError, TypeError, OverflowError:
             return None
     return max(0.0, seconds) if math.isfinite(seconds) else None
 
@@ -88,7 +88,7 @@ class LoseItClient:
                             "Lose It response exceeds safety limit"
                         )
                 return body.decode("utf-8")
-        except (TimeoutError, aiohttp.ClientError):
+        except TimeoutError, aiohttp.ClientError:
             raise LoseItConnectionError("Lose It connection failed") from None
         except UnicodeError:
             raise LoseItProtocolError("Invalid Lose It response encoding") from None
