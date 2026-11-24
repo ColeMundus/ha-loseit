@@ -23,7 +23,16 @@ def workflow(name):
 def test_ci_checks_are_independent_and_coverage_is_filesystem_scoped():
     ci = workflow("ci.yml")
     assert ci["name"] == "Validate"
-    assert set(ci["jobs"]) == {"lint", "types", "tests", "package", "hassfest", "hacs"}
+    assert set(ci["jobs"]) == {
+        "scope",
+        "draft-lint",
+        "lint",
+        "types",
+        "tests",
+        "package",
+        "hassfest",
+        "hacs",
+    }
     assert ci["permissions"] == {"contents": "read"}
     assert "workflow_call" in ci["on"]
     steps = ci["jobs"]["tests"]["steps"]
@@ -33,7 +42,9 @@ def test_ci_checks_are_independent_and_coverage_is_filesystem_scoped():
     assert "coverage.xml" in runs
     assert "--disable-socket" in (ROOT / "pyproject.toml").read_text()
     assert "fail_under = 90" in (ROOT / "pyproject.toml").read_text()
-    assert ci["jobs"]["hacs"]["if"] == "github.event.repository.private == false"
+    hacs_condition = ci["jobs"]["hacs"]["if"]
+    assert "github.event.repository.private == false" in hacs_condition
+    assert "needs.scope.outputs.docs_only != 'true'" in hacs_condition
     assert "local brands required" in ci["jobs"]["hacs"]["name"]
     assert "ignore" not in ci["jobs"]["hacs"]["steps"][-1]["with"]
     assert "tests/test_branding.py" in str(ci["jobs"]["package"])
