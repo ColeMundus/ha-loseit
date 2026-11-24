@@ -42,8 +42,7 @@ class SessionRequestGate:
             entry
             for entry in hass.config_entries.async_entries(DOMAIN)
             if entry is existing
-            or entry.unique_id is not None
-            and entry.unique_id in accounts
+            or (entry.unique_id is not None and entry.unique_id in accounts)
             or self._fingerprint(entry.data[CONF_COOKIES]) in fingerprints
         ]
 

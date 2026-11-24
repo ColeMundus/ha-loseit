@@ -142,7 +142,7 @@ def test_linked_runtime_files_are_rejected(source_tree, name):
     path = source_tree / package.PREFIX / name
     path.unlink()
     path.symlink_to(ROOT / package.PREFIX / name)
-    with pytest.raises(ValueError, match="linked runtime|symlink"):
+    with pytest.raises(ValueError, match=r"linked runtime|symlink"):
         package.sources(source_tree)
 
 
@@ -190,14 +190,14 @@ def test_invalid_manifest_is_rejected(source_tree):
 )
 def test_unreviewed_brand_assets_fail_closed(source_tree, name):
     (source_tree / package.PREFIX / name).write_text("synthetic secret")
-    with pytest.raises(ValueError, match="Brand files.*allowlist"):
+    with pytest.raises(ValueError, match=r"Brand files.*allowlist"):
         package.sources(source_tree)
 
 
 @pytest.mark.parametrize("name", package.BRAND_FILES)
 def test_missing_brand_asset_fails_closed(source_tree, name):
     (source_tree / package.PREFIX / name).unlink()
-    with pytest.raises(ValueError, match="Brand files.*allowlist"):
+    with pytest.raises(ValueError, match=r"Brand files.*allowlist"):
         package.sources(source_tree)
 
 

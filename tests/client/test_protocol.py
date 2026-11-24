@@ -15,7 +15,7 @@ STATE = "com.loseit.core.client.model.DailyLogGoalsState/2438260065"
 
 
 def wire(tokens, strings):
-    return "//OK" + json.dumps(list(reversed(tokens)) + [strings, 0, 7])
+    return "//OK" + json.dumps([*reversed(tokens), strings, 0, 7])
 
 
 def test_decode_identity_and_backreference():
