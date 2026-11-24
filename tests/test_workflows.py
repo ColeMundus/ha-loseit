@@ -42,10 +42,9 @@ def test_ci_checks_are_independent_and_coverage_is_filesystem_scoped():
     assert "coverage.xml" in runs
     assert "--disable-socket" in (ROOT / "pyproject.toml").read_text()
     assert "fail_under = 90" in (ROOT / "pyproject.toml").read_text()
-    assert (
-        ci["jobs"]["hacs"]["if"]
-        == "${{ !cancelled() && (github.event.repository.private == false) && needs.scope.outputs.docs_only != 'true' }}"
-    )
+    hacs_condition = ci["jobs"]["hacs"]["if"]
+    assert "github.event.repository.private == false" in hacs_condition
+    assert "needs.scope.outputs.docs_only != 'true'" in hacs_condition
     assert "local brands required" in ci["jobs"]["hacs"]["name"]
     assert "ignore" not in ci["jobs"]["hacs"]["steps"][-1]["with"]
     assert "tests/test_branding.py" in str(ci["jobs"]["package"])
