@@ -4,6 +4,7 @@ on:
     branches: [main]
     tags: ['**']
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
   workflow_call:
   schedule:
@@ -17,7 +18,63 @@ defaults:
   run:
     shell: bash
 jobs:
+  scope:
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      docs_only: ${{ steps.diff.outputs.docs_only }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Identify Markdown-only changes
+        id: diff
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          python3 - <<'PYTHON'
+          import os
+          import subprocess
+
+          known = {b"README.md", b"CONTRIBUTING.md", b"SECURITY.md", b"CHANGELOG.md"}
+          diff = subprocess.run(
+              ["git", "diff", "--name-only", "-z", "--no-renames", os.environ["BASE_SHA"], "HEAD", "--"],
+              stdout=subprocess.PIPE,
+              check=False,
+          )
+          paths = diff.stdout.split(b"\0")[:-1]
+          docs_only = diff.returncode == 0 and bool(paths) and all(
+              path in known or (path.startswith(b"docs/") and path.endswith(b".md"))
+              for path in paths
+          )
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as output:
+              print(f"docs_only={str(docs_only).lower()}", file=output)
+          print("Markdown-only draft" if docs_only else "Full validation required")
+          PYTHON
+
+  draft-lint:
+    if: needs.scope.outputs.docs_only == 'true'
+    needs: scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          python-version: '3.14.7'
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+          cache-suffix: draft-lint
+      - run: uv sync --locked
+      - run: uv run --no-sync ruff check .
+      - run: uv run --no-sync ruff format --check .
   lint:
+    if: ${{ !cancelled() && needs.scope.outputs.docs_only != 'true' }}
+    needs: scope
     name: Lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -34,6 +91,8 @@ jobs:
       - run: uv run --locked ruff check .
       - run: uv run --locked ruff format --check .
   types:
+    if: ${{ !cancelled() && needs.scope.outputs.docs_only != 'true' }}
+    needs: scope
     name: Types
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -49,6 +108,8 @@ jobs:
       - run: uv sync --locked
       - run: uv run --locked mypy custom_components/loseit
   tests:
+    if: ${{ !cancelled() && needs.scope.outputs.docs_only != 'true' }}
+    needs: scope
     name: Tests and coverage (90% minimum)
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -85,7 +146,9 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   package:
-    name: Package
+    if: ${{ !cancelled() && needs.scope.outputs.docs_only != 'true' }}
+    needs: scope
+    name: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft && 'Draft validation' || 'Package' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -111,6 +174,8 @@ jobs:
           if-no-files-found: error
           retention-days: 14
   hassfest:
+    if: ${{ !cancelled() && needs.scope.outputs.docs_only != 'true' }}
+    needs: scope
     name: Hassfest
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -120,11 +185,12 @@ jobs:
           persist-credentials: false
       - uses: home-assistant/actions/hassfest@86d4564712fa02543c808e3a693dd04f9d3f8361 # master
   hacs:
+    needs: scope
     name: HACS (public only; local brands required)
     # HACS requires a public repository. A skip is NOT HACS acceptance.
     # The 22.5.0 wrapper uses ghcr.io/hacs/action:main (mutable, not version 22.5.0).
     # Inspected image revision 0704ffc6 supports integration/brand/icon.png.
-    if: github.event.repository.private == false
+    if: ${{ !cancelled() && (github.event.repository.private == false) && needs.scope.outputs.docs_only != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
