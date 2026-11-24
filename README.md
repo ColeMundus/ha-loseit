@@ -49,3 +49,5 @@ for HACS custom-repository installation, not in the default catalog.
 
 Code is [MIT licensed](LICENSE), with [upstream notices](THIRD_PARTY_NOTICES.md).
 Official artwork and trademarks remain their owners' property; see the [branding notice](custom_components/loseit/brand/NOTICE.md). No affiliation or endorsement by Lose It!, FitNow, Inc. or Home Assistant.
+
+<!-- Temporary CI measurement full-08. This PR will be closed unmerged. -->
