@@ -119,7 +119,7 @@ def test_budget_food_remaining_from_explicit_daily_state_with_no_exercises():
     assert result.remaining_kcal == Decimal("-120.5")
 
 
-def food(nutrients, pending=False):
+def food(nutrients, *, pending=False):
     measurement = "com.loseit.healthdata.model.shared.food.FoodMeasurement/2371921172"
     pairs = [
         [gwt.ProtocolObject(measurement, [k]), Decimal(v)] for k, v in nutrients.items()
@@ -140,7 +140,7 @@ def test_macros_scaled_pending_excluded_missing_nutrient_propagates():
         [
             food({13: "10", 10: "20", 3: "0"}),
             food({13: "2", 3: "4"}),
-            food({13: "999", 10: "999", 3: "999"}, True),
+            food({13: "999", 10: "999", 3: "999"}, pending=True),
         ],
     )
     result = snapshot.parse_daily(details(foods), DAY)
