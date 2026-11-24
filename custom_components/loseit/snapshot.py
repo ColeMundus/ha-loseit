@@ -121,9 +121,13 @@ def parse_daily(details: Any, day: date) -> DailySnapshot:
         wf = fields(f[10], "RecordedWeight")
         weight_calendar = fields(wf[0], "DayDate") if wf[0] is not None else None
         amount = _number(wf[3])
-        if weight_calendar is not None and weight_calendar[1] == (day - EPOCH).days:
-            if amount is not None and amount > 0:
-                weight = amount * pounds_to_kg
+        if (
+            weight_calendar is not None
+            and weight_calendar[1] == (day - EPOCH).days
+            and amount is not None
+            and amount > 0
+        ):
+            weight = amount * pounds_to_kg
     if f[6] is not None:
         goals = fields(f[6], "GoalsSummary")
         # B is the uninitialized flag; n is goalWeight in both pinned layouts.
