@@ -2,6 +2,7 @@
 
 import json
 import subprocess
+from itertools import pairwise
 
 import pytest
 
@@ -181,7 +182,7 @@ def test_annotation_depth_bounded(gh):
     responses.append(ref(git_object("tag", shas[0])))
     responses.extend(
         {"sha": sha, "object": git_object("tag", next_sha)}
-        for sha, next_sha in zip(shas, shas[1:], strict=False)
+        for sha, next_sha in pairwise(shas)
     )
     with pytest.raises(ValueError, match="depth"):
         verifier.verify_release_tag(REPO, TAG, COMMIT)
